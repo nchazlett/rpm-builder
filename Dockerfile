@@ -17,7 +17,7 @@ ENV HOME /home/makerpm
 USER makerpm
 RUN rpmdev-setuptree
 
-ADD https://github.com/ehazlett/cert-tool/releases/download/v0.0.1/cert-tool_linux_amd64 /bin/cert-tool
+#ADD https://github.com/ehazlett/cert-tool/releases/download/v0.0.1/cert-tool_linux_amd64 /bin/cert-tool
 
 CMD /bin/bash
 
