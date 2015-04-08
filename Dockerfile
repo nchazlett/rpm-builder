@@ -18,7 +18,7 @@ USER makerpm
 RUN rpmdev-setuptree
 
 ADD https://github.com/ehazlett/cert-tool/releases/download/v0.0.1/cert-tool_linux_amd64 /bin/cert-tool
-ADD https://github.com/nchazlett/dockerfiles/blob/master/README.md
+ADD https://github.com/nchazlett/dockerfiles/blob/master/README.md README.md
 
 CMD /bin/bash
 
