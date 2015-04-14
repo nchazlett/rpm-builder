@@ -18,6 +18,9 @@ USER makerpm
 RUN rpmdev-setuptree
 
 ADD https://github.com/ehazlett/cert-tool/releases/download/v0.0.1/cert-tool_linux_amd64 /bin/cert-tool
+ADD cert-build.sh /usr/local/bin/cert-build.sh
+
+ENTRYPOINT ["/usr/local/bin/cert-build.sh"]
 
 CMD /bin/bash
 
