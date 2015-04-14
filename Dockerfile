@@ -6,6 +6,7 @@ RUN yum -y update
 RUN yum install -y rpm-build
 RUN yum install -y fedora-packager
 RUN yum install -y vim 
+RUN yum install -y make
 
 RUN useradd makerpm
 RUN chown -R makerpm:makerpm /home/makerpm
