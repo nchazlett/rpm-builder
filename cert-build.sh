@@ -89,4 +89,4 @@ cp -r /tmp/certs $HOME/rpmbuild/SOURCES/certs
 rpmbuild -ba $HOME/rpmbuild/SPECS/docker-tls-certificates.spec
 
 mkdir -p /build
-cp -r $HOME/rpmbuild/* /build/
+cp -r $HOME/rpmbuild/RPMS/noarch/* /build/
