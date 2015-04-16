@@ -20,8 +20,6 @@ ADD cert-build.sh /usr/local/bin/cert-build.sh
 #USER makerpm
 RUN rpmdev-setuptree
 
-ADD docker-tls-certificates.spec /root/rpmbuild/SPECS/
-
 ENTRYPOINT ["/usr/local/bin/cert-build.sh"]
 
 CMD /bin/bash
