@@ -78,7 +78,7 @@ EOF
 
 echo "generating certs: $ARGS"
 
-cert-tool $ARGS -d /tmp/docker-tls-certificates
+cert-tool $ARGS -d /tmp/RPMS/docker-tls-certificates
 
 pushd /tmp > /dev/null
 tar czf $HOME/rpmbuild/SOURCES/docker-tls-certificates.tar.gz docker-tls-certificates
