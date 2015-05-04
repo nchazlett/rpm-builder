@@ -1,12 +1,9 @@
 #!/bin/bash
 
-ARGS="-o $1"
-REG=${2:-localhost}
-SERVERS=${3:-localhost}
-
-for SRV in $SERVERS ; do
-	ARGS="$ARGS -s $SRV"
-done
+ARGS=$*
+if [ -z "$ARGS" ]; then
+    ARGS="-o unknown -s localhost"
+fi
 
 export REGISTRY=$REG
 
@@ -61,22 +58,26 @@ rm -rf \$RPM_BUILD_ROOT
 rm -rf %{_tmppath}/%{name}
 rm -rf %{_topdir}/BUILD/%{name}
 
+%changelog
+* Thu Apr 16 2015  Nick Hazlett
+- 1.0 r1 First release
+
 # list files owned by the package here
 %files
 %defattr(-,root,root)
 /etc/docker/certs.d
-/etc/docker/certs.d/$REGISTRY/ca.pem
 /etc/docker/certs.d/$REGISTRY/client.pem
 /etc/docker/certs.d/$REGISTRY/client-key.pem
 /etc/docker/certs.d/$REGISTRY/server.pem
 /etc/docker/certs.d/$REGISTRY/server-key.pem
 
-%changelog
-* Thu Apr 16 2015  Nick Hazlett
-- 1.0 r1 First release
 EOF
-
 echo "generating certs: $ARGS"
+
+# if we didn't use a custom CA add it to the spec
+if [ -e /etc/docker/certs.d/$REGISTRY/ca.pem ]; then
+    echo "/etc/docker/certs.d/$REGISTRY/ca.pem" >> $HOME/rpmbuild/SPECS/docker-tls-certificates.spec
+fi
 
 cert-tool $ARGS -d /tmp/docker-tls-certificates
 
