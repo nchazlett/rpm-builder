@@ -1,13 +1,26 @@
 #!/bin/bash
-
-ARGS=$*
+TMP_CERT_PATH=/tmp/docker-tls-certificates
+REGISTRY=$1
+ARGS="${*:2}"
 if [ -z "$ARGS" ]; then
     ARGS="-o unknown -s localhost"
 fi
 
-export REGISTRY=$REG
+mkdir -p $TMP_CERT_PATH
 
-cat << EOF > $HOME/rpmbuild/SPECS/docker-tls-certificates.spec
+# check for passed CA
+for ARG in $ARGS; do
+    if [[ $ARG == *tls-ca-cert* ]]; then
+        CA=`echo $ARG | cut -d'=' -f2`
+	cp $CA $TMP_CERT_PATH
+    fi
+    if [[ $ARG == *tls-ca-key* ]]; then
+        CA_KEY=`echo $ARG | cut -d'=' -f2`
+	cp $CA_KEY $TMP_CERT_PATH
+    fi
+done
+
+CONF="
 Summary:        Docker TLS Certificates
 Name:           docker-tls-certificates
 Version:        1.0
@@ -66,26 +79,24 @@ rm -rf %{_topdir}/BUILD/%{name}
 %files
 %defattr(-,root,root)
 /etc/docker/certs.d
+/etc/docker/certs.d/$REGISTRY/ca.pem
 /etc/docker/certs.d/$REGISTRY/client.pem
 /etc/docker/certs.d/$REGISTRY/client-key.pem
 /etc/docker/certs.d/$REGISTRY/server.pem
 /etc/docker/certs.d/$REGISTRY/server-key.pem
+"
 
-EOF
+echo "$CONF" > $HOME/rpmbuild/SPECS/docker-tls-certificates.spec
+
 echo "generating certs: $ARGS"
 
-# if we didn't use a custom CA add it to the spec
-if [ -e /etc/docker/certs.d/$REGISTRY/ca.pem ]; then
-    echo "/etc/docker/certs.d/$REGISTRY/ca.pem" >> $HOME/rpmbuild/SPECS/docker-tls-certificates.spec
-fi
-
-cert-tool $ARGS -d /tmp/docker-tls-certificates
+cert-tool $ARGS -d $TMP_CERT_PATH
 
 pushd /tmp > /dev/null
-tar czf $HOME/rpmbuild/SOURCES/docker-tls-certificates.tar.gz docker-tls-certificates
+tar czf $HOME/rpmbuild/SOURCES/docker-tls-certificates.tar.gz $TMP_CERT_PATH
 popd > /dev/null
 
-cp -r /tmp/docker-tls-certificates $HOME/rpmbuild/SOURCES/certs
+cp -r $TMP_CERT_PATH/* $HOME/rpmbuild/SOURCES/certs
 
 rpmbuild -ba $HOME/rpmbuild/SPECS/docker-tls-certificates.spec
 
