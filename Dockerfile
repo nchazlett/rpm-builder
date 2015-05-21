@@ -13,5 +13,3 @@ ADD cert-build.sh /usr/local/bin/cert-build.sh
 RUN rpmdev-setuptree
 
 ENTRYPOINT ["/usr/local/bin/cert-build.sh"]
-
-CMD /bin/bash

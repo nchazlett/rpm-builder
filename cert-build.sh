@@ -1,24 +1,28 @@
 #!/bin/bash
 TMP_CERT_PATH=/tmp/docker-tls-certificates
 REGISTRY=$1
+BASE_ARGS="-o unknown -s localhost"
 ARGS="${*:2}"
-if [ -z "$ARGS" ]; then
-    ARGS="-o unknown -s localhost"
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    echo "Usage:
+    <organization> <cert-tool-args>
+    
+    For example:
+    registry.example.com
+
+    Example with custom cert-tool options:
+    registry.example.com -o=myorg --tls-ca-cert=/certs/ca.pem --tls-ca-key=/certs/ca-key.pem
+
+    "
+    exit 0
+fi
+
+if [ ! -z "$ARGS" ]; then
+    BASE_ARGS="-s $REGISTRY"
 fi
 
 mkdir -p $TMP_CERT_PATH
-
-# check for passed CA
-for ARG in $ARGS; do
-    if [[ $ARG == *tls-ca-cert* ]]; then
-        CA=`echo $ARG | cut -d'=' -f2`
-	cp $CA $TMP_CERT_PATH
-    fi
-    if [[ $ARG == *tls-ca-key* ]]; then
-        CA_KEY=`echo $ARG | cut -d'=' -f2`
-	cp $CA_KEY $TMP_CERT_PATH
-    fi
-done
 
 CONF="
 Summary:        Docker TLS Certificates
@@ -88,15 +92,30 @@ rm -rf %{_topdir}/BUILD/%{name}
 
 echo "$CONF" > $HOME/rpmbuild/SPECS/docker-tls-certificates.spec
 
+ARGS="$BASE_ARGS $ARGS"
 echo "generating certs: $ARGS"
 
 cert-tool $ARGS -d $TMP_CERT_PATH
 
+# check for passed CA
+for ARG in $ARGS; do
+    if [[ $ARG == *tls-ca-cert* ]]; then
+        CA=`echo $ARG | cut -d'=' -f2`
+	cp $CA $TMP_CERT_PATH
+    fi
+    if [[ $ARG == *tls-ca-key* ]]; then
+        CA_KEY=`echo $ARG | cut -d'=' -f2`
+	cp $CA_KEY $TMP_CERT_PATH
+    fi
+done
+
+ls -lah $TMP_CERT_PATH
+
 pushd /tmp > /dev/null
-tar czf $HOME/rpmbuild/SOURCES/docker-tls-certificates.tar.gz $TMP_CERT_PATH
+tar czf $HOME/rpmbuild/SOURCES/docker-tls-certificates.tar.gz `basename $TMP_CERT_PATH`
 popd > /dev/null
 
-cp -r $TMP_CERT_PATH/* $HOME/rpmbuild/SOURCES/certs
+cp -r $TMP_CERT_PATH/* $HOME/rpmbuild/SOURCES/docker-tls-certificates
 
 rpmbuild -ba $HOME/rpmbuild/SPECS/docker-tls-certificates.spec
 
